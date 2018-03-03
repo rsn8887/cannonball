@@ -176,8 +176,7 @@ void Video::draw_frame()
         (hwroad.*hwroad.render_foreground)(pixels);
         sprite_layer->render(8);
         tile_layer->render_text_layer(pixels, 1);
-     }
-
+    }
     renderer->draw_frame(pixels);
     renderer->finalize_frame();
 }

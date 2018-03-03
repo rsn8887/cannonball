@@ -1,5 +1,17 @@
-cmake_minimum_required (VERSION 2.6.2)
-project (cannonball)
+cmake_minimum_required(VERSION 2.8)
+
+#VITA
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  if(DEFINED ENV{VITASDK})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
+  else()
+    message(FATAL_ERROR "Please define VITASDK to point to your SDK path!")
+  endif()
+endif()
+set(TARGET vita)
+#END VITA
+
+project (Cannonball)
 
 set(DCMAKE default.cmake)
 set(CMDIR ../cmake)
@@ -14,7 +26,6 @@ set(main_cpp_base ../src/main)
 if(TARGET)
     set(TCMAKE ${TARGET}.cmake)
     if(EXISTS ${CMDIR}/${TCMAKE})
-        message("CMake files for ${TARGET} found, using ${TCMAKE}")
         include(${TCMAKE})
     else()
         message("CMake files for ${TARGET} not found, using ${DCMAKE}")
@@ -25,8 +36,8 @@ else()
     include(${DCMAKE})
 endif(TARGET)
 
-set(BOOST_INCLUDEDIR ${lib_base}/boost_1_54_0)
-find_package(Boost REQUIRED)
+set(BOOST_INCLUDEDIR ${lib_base}/boost)
+#find_package(Boost REQUIRED)
 
 # Include
 include_directories(
@@ -292,7 +303,9 @@ if(CANNONBOARD)
     add_definitions(-DCANNONBOARD)
 endif()
 
-add_executable(cannonball ${SRCS})
+add_executable(${PROJECT_NAME} ${SRCS})
+
+target_compile_options(${PROJECT_NAME} PRIVATE ${FLAGS})
 
 # Copy Configuration file to current build
 
@@ -313,3 +326,16 @@ configure_file(../res/tilemap.bin ./res/tilemap.bin
 configure_file(../res/tilepatch.bin ./res/tilepatch.bin
     COPYONLY 
 )
+
+#VITA
+vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME} ${UNSAFE_FLAG})
+add_custom_target(${PROJECT_NAME}.vpk
+        DEPENDS ${PROJECT_NAME}.self
+        COMMAND rm -rf vpk && mkdir -p vpk/sce_sys
+        COMMAND ${VITASDK}/bin/vita-mksfoex -s TITLE_ID=${TITLEID} "${PROJECT_NAME}" vpk/sce_sys/param.sfo
+        COMMAND cp ${PROJECT_NAME}.self vpk/eboot.bin
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/../psp2data/* vpk
+        COMMAND cp -r res vpk
+        COMMAND cd vpk && zip -r ../Cannonball.vpk . && cd ..
+        )
+#END VITA

@@ -48,6 +48,10 @@
 // Initialize Shared Variables
 using namespace cannonball;
 
+#ifdef __vita__
+#include <psp2/power.h> 
+#endif
+
 int    cannonball::state       = STATE_BOOT;
 double cannonball::frame_ms    = 0;
 int    cannonball::frame       = 0;
@@ -70,7 +74,9 @@ static void quit_func(int code)
     forcefeedback::close();
     delete menu;
     SDL_Quit();
+#ifndef __vita__
     exit(code);
+#endif
 }
 
 static void process_events(void)
@@ -210,7 +216,7 @@ static void tick()
         cannonboard.write(outrun.outputs->dig_out, outrun.outputs->hw_motor_control);
 
     // Draw SDL Video
-    video.draw_frame();  
+    video.draw_frame();
 }
 
 static void main_loop()
@@ -270,6 +276,13 @@ int main(int argc, char* argv[])
         std::cerr << "SDL Initialization Failed: " << SDL_GetError() << std::endl;
         return 1; 
     }
+
+#ifdef __vita__
+	scePowerSetArmClockFrequency(444);
+    scePowerSetGpuClockFrequency(222);
+    scePowerSetBusClockFrequency(222);
+    scePowerSetGpuXbarClockFrequency(222);
+#endif
 
     menu = new Menu(&cannonboard);
 

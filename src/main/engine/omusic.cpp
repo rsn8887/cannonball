@@ -39,13 +39,21 @@ bool OMusic::load_widescreen_map()
     if (tilemap == NULL)
     {
         tilemap = new RomLoader();
+#ifdef __vita__
+        status += tilemap->load_binary("app0:/res/tilemap.bin");
+#else
         status += tilemap->load_binary("res/tilemap.bin");
+#endif
     }
 
     if (tile_patch == NULL)
     {
         tile_patch = new RomLoader();
+#ifdef __vita__
+        status += tile_patch->load_binary("app0:/res/tilepatch.bin");
+#else
         status += tile_patch->load_binary("res/tilepatch.bin");
+#endif
     }
 
     return status == 0;

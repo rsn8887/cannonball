@@ -210,7 +210,7 @@ void Menu::populate()
     menu_musictest.push_back(ENTRY_MUSIC4);
     menu_musictest.push_back(ENTRY_BACK);
 
-    menu_about.push_back("CANNONBALL 0.3 © CHRIS WHITE 2014");
+    menu_about.push_back("CANNONBALL 0.3 ï¿½ CHRIS WHITE 2014");
     menu_about.push_back("REASSEMBLER.BLOGSPOT.COM");
     menu_about.push_back(" ");
     menu_about.push_back("CANNONBALL IS FREE AND MAY NOT BE SOLD.");
@@ -1021,7 +1021,9 @@ void Menu::restart_video()
     if (config.sound.enabled)
         cannonball::audio.stop_audio();
     #endif
+    #ifndef __vita__
     video.disable();
+    #endif
     video.init(&roms, &config.video);
     #ifdef COMPILE_SOUND_CODE
     osoundint.init();

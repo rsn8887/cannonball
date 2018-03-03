@@ -13,6 +13,10 @@
 #include "rendersurface.hpp"
 #include "frontend/config.hpp"
 
+#ifdef __vita__
+#include "vita2d.h"
+#endif
+
 RenderSurface::RenderSurface()
 {
 }
@@ -24,13 +28,63 @@ RenderSurface::~RenderSurface()
 bool RenderSurface::init(int src_width, int src_height, 
                     int scale,
                     int video_mode,
-                    int scanlines)
+                    int scanlines) 
 {
+
     this->src_width  = src_width;
     this->src_height = src_height;
     this->video_mode = video_mode;
     this->scanlines  = scanlines;
 
+#ifdef __vita__
+    int flags = 0;
+    flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    flags |= SDL_WINDOW_RESIZABLE;
+    scn_width = 960;
+    scn_height = 544;
+    src_rect.w = src_width;
+    src_rect.h = src_height;
+    src_rect.x = 0;
+    src_rect.y = 0;
+    dst_rect.y = 0;
+
+    if (video_mode != video_settings_t::MODE_STRETCH) {
+        float x_ratio = float(src_width) / float(src_height);
+        int corrected_scn_width = scn_height * x_ratio; 
+        dst_rect.w = corrected_scn_width;
+        dst_rect.h = scn_height;
+        dst_rect.x = (scn_width - corrected_scn_width) / 2;
+    }
+    else {
+        dst_rect.w = scn_width;
+        dst_rect.h = scn_height;
+        dst_rect.x = 0;
+    }
+    SDL_ShowCursor(false);
+    
+    const int bpp = 32;
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"); 
+    if (!window)
+        window = SDL_CreateWindow("Cannonball", 0, 0, scn_width, scn_height, flags);
+    if (!renderer)
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    //vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
+    if (surface)
+        SDL_FreeSurface(surface);
+
+    // Need to account for width not divisible by 8 in widescreen mode
+    if (src_width % 8 != 0)
+        padding = 8 - (src_width % 8);
+    else
+        padding = 0;
+
+    surface = SDL_CreateRGBSurface(0, src_width + padding, src_height, bpp, 0xFF, 0xFF << 8, 0xFF << 16, 0xFF << 24);
+
+    if (texture)
+        SDL_DestroyTexture(texture);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, src_width, src_height);
+
+#else
     // Setup SDL Screen size
     if (!RenderBase::sdl_screen_size())
         return false;
@@ -50,39 +104,38 @@ bool RenderSurface::init(int src_width, int src_height,
     // --------------------------------------------------------------------------------------------
     if (video_mode == video_settings_t::MODE_FULL || video_mode == video_settings_t::MODE_STRETCH)
     {
-	flags |= (SDL_WINDOW_FULLSCREEN); // Set SDL flag
-
-	// Fullscreen window size: SDL2 ignores w and h in SDL_CreateWindow() if FULLSCREEN flag
-	// is enable, which is fine, so the window will be fullscreen of the physical videomode
-	// size, but then, if we want to preserve ratio, we need dst_width bigger than src_width.	
-	scn_width  = orig_width;
+        flags |= (SDL_WINDOW_FULLSCREEN); // Set SDL flag
+        
+        // Fullscreen window size: SDL2 ignores w and h in SDL_CreateWindow() if FULLSCREEN flag
+        // is enable, which is fine, so the window will be fullscreen of the physical videomode
+        // size, but then, if we want to preserve ratio, we need dst_width bigger than src_width.	
+        scn_width  = orig_width;
         scn_height = orig_height;
-
-	src_rect.w = src_width;
-	src_rect.h = src_height;
-	src_rect.x = 0;
-	src_rect.y = 0;
-	dst_rect.y = 0;
-
-	float x_ratio = float(src_width) / float(src_height);
-	int corrected_scn_width = scn_height * x_ratio; 
-
-	if (!(video_mode == video_settings_t::MODE_STRETCH)) {
-		float x_ratio = float(src_width) / float(src_height);
-		int corrected_scn_width = scn_height * x_ratio; 
-		dst_rect.w = corrected_scn_width;
-		dst_rect.h = scn_height;
-		dst_rect.x = (scn_width - corrected_scn_width) / 2;
-	}
-	else {
-		dst_rect.w = scn_width;
-		dst_rect.h = scn_height;
-		dst_rect.x = 0;
-	}
-
+        
+        src_rect.w = src_width;
+        src_rect.h = src_height;
+        src_rect.x = 0;
+        src_rect.y = 0;
+        dst_rect.y = 0;
+        
+        float x_ratio = float(src_width) / float(src_height);
+        int corrected_scn_width = scn_height * x_ratio; 
+        
+        if (!(video_mode == video_settings_t::MODE_STRETCH)) {
+            float x_ratio = float(src_width) / float(src_height);
+            int corrected_scn_width = scn_height * x_ratio; 
+            dst_rect.w = corrected_scn_width;
+            dst_rect.h = scn_height;
+            dst_rect.x = (scn_width - corrected_scn_width) / 2;
+        }
+        else {
+            dst_rect.w = scn_width;
+            dst_rect.h = scn_height;
+            dst_rect.x = 0;
+        }
+        
         SDL_ShowCursor(false);
-     }
-   
+    }
     // --------------------------------------------------------------------------------------------
     // Windowed Mode
     // --------------------------------------------------------------------------------------------
@@ -93,25 +146,23 @@ bool RenderSurface::init(int src_width, int src_height,
         scn_width  = src_width  * scale;
         scn_height = src_height * scale;
 
-	src_rect.w = src_width;
-	src_rect.h = src_height;
-	src_rect.x = 0;
-	src_rect.y = 0;
-	dst_rect.w = scn_width;
-	dst_rect.h = scn_height;
-	dst_rect.x = 0;
-	dst_rect.y = 0;
+        src_rect.w = src_width;
+        src_rect.h = src_height;
+        src_rect.x = 0;
+        src_rect.y = 0;
+        dst_rect.w = scn_width;
+        dst_rect.h = scn_height;
+        dst_rect.x = 0;
+        dst_rect.y = 0;
 
         SDL_ShowCursor(true);
     }
 
     //int bpp = info->vfmt->BitsPerPixel;
     const int bpp = 32;
-
     // Frees (Deletes) existing surface
     if (surface)
         SDL_FreeSurface(surface);
-
     surface = SDL_CreateRGBSurface(0,
                                   src_width,
                                   src_height,
@@ -120,23 +171,16 @@ bool RenderSurface::init(int src_width, int src_height,
                                   0,
                                   0,
                                   0);
-
     if (!surface)
     {
-        std::cerr << "Surface creation failed: " << SDL_GetError() << std::endl;
-        return false;
+       std::cerr << "Surface creation failed: " << SDL_GetError() << std::endl;
+       return false;
     }
-
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"); 
-    window = SDL_CreateWindow(
-        "Cannonball", 0, 0, scn_width, scn_height, 
-        flags);
-
+    window = SDL_CreateWindow("Cannonball", 0, 0, scn_width, scn_height, flags);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC);
-    texture = SDL_CreateTexture(renderer,
-                               SDL_PIXELFORMAT_ARGB8888,
-                               SDL_TEXTUREACCESS_STREAMING,
-                               src_width, src_height);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, src_width, src_height);
+#endif
 
     // Convert the SDL pixel surface to 32 bit.
     // This is potentially a larger surface area than the internal pixel array.
@@ -180,8 +224,16 @@ bool RenderSurface::finalize_frame()
 void RenderSurface::draw_frame(uint16_t* pixels)
 {
     uint32_t* spix = screen_pixels;
-
-    // Lookup real RGB value from rgb array for backbuffer
-    for (int i = 0; i < (src_width * src_height); i++)
-	*(spix++) = rgb[*(pixels++) & ((S16_PALETTE_ENTRIES * 3) - 1)];
+#ifdef __vita__
+    for (int i = 0; i < src_height; i++) {
+        for (int j = 0; j < src_width; j++) {
+            *(spix++) = 0xFF << 24 | rgb[*(pixels++) & ((S16_PALETTE_ENTRIES * 3) - 1)] ; 
+        }
+        for (int j = 0; j < padding; j++)
+            spix++;
+    }
+#else
+    for (int i = 0; i < src_height * src_width; i++)
+        *(spix++) = rgb[*(pixels++) & ((S16_PALETTE_ENTRIES * 3) - 1)];
+#endif
 }

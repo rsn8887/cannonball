@@ -56,8 +56,11 @@ int RomLoader::load(const char* filename, const int offset, const int length, co
     CFRelease(resourcesURL);
     chdir(bundlepath);
 #endif
-
+#ifdef __vita__
+    std::string path = "ux0:/data/cannonball/roms/";
+#else
     std::string path = "roms/";
+#endif
     path += std::string(filename);
 
     // Open rom file

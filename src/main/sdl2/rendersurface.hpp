@@ -42,4 +42,9 @@ private:
     // ratio correction using SDL_RenderCopy()
     SDL_Rect src_rect;
     SDL_Rect dst_rect;
+
+#ifdef __vita__
+    int padding;
+#endif
+
 };

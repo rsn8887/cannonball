@@ -244,7 +244,6 @@ bool Config::save(const std::string &filename)
     ttrial.laps    = pt_config.get("time_trial.laps",    5);
     ttrial.traffic = pt_config.get("time_trial.traffic", 3);
     cont_traffic   = pt_config.get("continuous.traffic", 3);
-
     try
     {
         write_xml(filename, pt_config, std::locale(), xml_writer_settings('\t', 1)); // Tab space 1
