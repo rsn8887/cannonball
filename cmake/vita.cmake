@@ -48,6 +48,7 @@ set(sdl_flags "0")
 
 # Set SDL2 instead of SDL1
 set(SDL2 1)
+set(VITA 1)
 #set(OPENGL 1)
 
 set(FLAGS

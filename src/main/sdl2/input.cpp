@@ -301,4 +301,21 @@ void Input::handle_joy(const uint8_t button, const bool is_pressed)
 
     if (button == pad_config[7])
         keys[VIEWPOINT] = is_pressed;
+
+#ifdef __vita__
+    //map dpad to digital directions to allow menu control
+    //even when analog wheel is enabled
+    if (button == 6)
+        keys[DOWN] = is_pressed;
+
+    if (button == 7)
+        keys[LEFT] = is_pressed;
+
+    if (button == 8)
+        keys[UP] = is_pressed;
+
+    if (button == 9)
+        keys[RIGHT] = is_pressed;
+#endif
+
 }

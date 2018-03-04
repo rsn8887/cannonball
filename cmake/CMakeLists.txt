@@ -328,6 +328,11 @@ configure_file(../res/tilepatch.bin ./res/tilepatch.bin
 )
 
 #VITA
+if(VITA)
+configure_file(../res/config_vita.xml ./config.xml
+    COPYONLY 
+)
+endif()
 vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME} ${UNSAFE_FLAG})
 add_custom_target(${PROJECT_NAME}.vpk
         DEPENDS ${PROJECT_NAME}.self
