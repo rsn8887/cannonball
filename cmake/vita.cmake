@@ -8,12 +8,15 @@ set(lib_base $ENV{VITASDK}/arm-vita-eabi/lib)
 set(sdl_root $ENV{VITASDK}/arm-vita-eabi/include/SDL2)
 
 include_directories(
-	"${sdl_root}"
+  ${CMAKE_SOURCE_DIR}/../src/main/psp2/vitashaderlibs/vita2d_fbo/includes/
+  ${CMAKE_SOURCE_DIR}/../src/main/psp2/vitashaderlibs/vita-shader-collection/includes/
+  "${sdl_root}"
 )
 
 link_libraries(
     SDL2
-	Vita2d
+	vita2d_fbo
+	vitashaders
 #	VitaGL
 	SceSysmodule_stub
 	SceDisplay_stub
@@ -35,7 +38,9 @@ link_libraries(
 
 # Linking
 link_directories(
-    "${lib_base}"
+	${CMAKE_SOURCE_DIR}/../src/main/psp2/vitashaderlibs/vita2d_fbo/lib/
+	${CMAKE_SOURCE_DIR}/../src/main/psp2/vitashaderlibs/vita-shader-collection/lib/
+	"${lib_base}"
 )
 
 add_definitions(-O3 -DSDL2)

@@ -274,17 +274,40 @@ SOURCE_GROUP(src\\cannonboard FILES ${src_cannonboard})
 SOURCE_GROUP(src\\engine FILES ${src_engine})
 SOURCE_GROUP(src\\engine\\audio FILES ${src_engine_audio})
 
-set(SRCS
-    ${src_main}
-    ${src_frontend}
-    ${src_hwvideo}
-    ${src_hwaudio}
-    ${src_sdl}
-    ${src_directx}
-    ${src_cannonboard}
-    ${src_engine}
-    ${src_engine_audio}
-)
+
+#VITA
+if(VITA)
+    set(src_vita
+        "${main_cpp_base}/psp2/psp2_shader.h"
+
+        "${main_cpp_base}/psp2/psp2_shader.c"
+        )
+    set(SRCS
+        ${src_main}
+        ${src_frontend}
+        ${src_hwvideo}
+        ${src_hwaudio}
+        ${src_sdl}
+        ${src_directx}
+        ${src_cannonboard}
+        ${src_engine}
+        ${src_engine_audio}
+        ${src_vita}
+    )
+else()
+    set(SRCS
+        ${src_main}
+        ${src_frontend}
+        ${src_hwvideo}
+        ${src_hwaudio}
+        ${src_sdl}
+        ${src_directx}
+        ${src_cannonboard}
+        ${src_engine}
+        ${src_engine_audio}
+        ${src_vita}
+    )
+endif(VITA)
 
 # Add Icon For Windows Builds
 if(WIN32)

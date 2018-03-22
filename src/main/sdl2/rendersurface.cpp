@@ -14,7 +14,9 @@
 #include "frontend/config.hpp"
 
 #ifdef __vita__
-#include "vita2d.h"
+#include "psp2/psp2_shader.h"
+#include <vita2d_fbo.h>
+vita2d_shader *shader = NULL;
 #endif
 
 RenderSurface::RenderSurface()
@@ -48,14 +50,18 @@ bool RenderSurface::init(int src_width, int src_height,
     src_rect.y = 0;
     dst_rect.y = 0;
 
-    if (video_mode != video_settings_t::MODE_STRETCH) {
+    if (video_mode == video_settings_t::MODE_FULL) {
         float x_ratio = float(src_width) / float(src_height);
         int corrected_scn_width = scn_height * x_ratio; 
         dst_rect.w = corrected_scn_width;
         dst_rect.h = scn_height;
         dst_rect.x = (scn_width - corrected_scn_width) / 2;
-    }
-    else {
+    } else if (video_mode == video_settings_t::MODE_WINDOW) {
+        dst_rect.w = src_width * scale;
+        dst_rect.h = src_height * scale;
+        dst_rect.x = (scn_width - dst_rect.w) / 2;
+        dst_rect.y = (scn_height - dst_rect.h) / 2;
+    } else {
         dst_rect.w = scn_width;
         dst_rect.h = scn_height;
         dst_rect.x = 0;
@@ -68,7 +74,14 @@ bool RenderSurface::init(int src_width, int src_height,
         window = SDL_CreateWindow("Cannonball", 0, 0, scn_width, scn_height, flags);
     if (!renderer)
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+#ifdef __vita__
+    //Enable sharp-bilinear-simple shader for sharp pixels without distortion.
+    //This has to be done after the SDL renderer is created because that inits vita2d.
+    shader = setPSP2Shader(SHARP_BILINEAR_SIMPLE);
     //vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
+#endif    
+
     if (surface)
         SDL_FreeSurface(surface);
 
