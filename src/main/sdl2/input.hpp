@@ -92,6 +92,14 @@ private:
 
     void handle_key(const int, const bool);
     void handle_joy(const uint8_t, const bool);
+    
+#ifdef __vita__
+    // dpad wins over joystick
+    bool dpad_up;
+    bool dpad_down;
+    bool dpad_left;
+    bool dpad_right;
+#endif
 };
 
 extern Input input;
