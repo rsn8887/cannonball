@@ -13,12 +13,6 @@
 #include "rendersurface.hpp"
 #include "frontend/config.hpp"
 
-#ifdef __vita__
-#include "psp2/psp2_shader.h"
-#include <vita2d_fbo.h>
-vita2d_shader *shader = NULL;
-#endif
-
 RenderSurface::RenderSurface()
 {
 }
@@ -75,27 +69,39 @@ bool RenderSurface::init(int src_width, int src_height,
     if (!renderer)
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-#ifdef __vita__
     //Enable sharp-bilinear-simple shader for sharp pixels without distortion.
     //This has to be done after the SDL renderer is created because that inits vita2d.
     shader = setPSP2Shader(SHARP_BILINEAR_SIMPLE);
-    //vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
-#endif    
+    vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
 
     if (surface)
         SDL_FreeSurface(surface);
 
-    // Need to account for width not divisible by 8 in widescreen mode
-    if (src_width % 8 != 0)
-        padding = 8 - (src_width % 8);
-    else
-        padding = 0;
-
-    surface = SDL_CreateRGBSurface(0, src_width + padding, src_height, bpp, 0xFF, 0xFF << 8, 0xFF << 16, 0xFF << 24);
+    surface = SDL_CreateRGBSurface(0, src_width, src_height, bpp, 0xFF, 0xFF << 8, 0xFF << 16, 0xFF << 24);
 
     if (texture)
         SDL_DestroyTexture(texture);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, src_width, src_height);
+
+    // get rid of all SDL-related slow-down by drawing directly into a vita-native texture
+    vita2d_set_vblank_wait(true);
+    if (vitatex_hwscreen) {
+        vita2d_free_texture(vitatex_hwscreen);
+    }
+    vitatex_hwscreen = vita2d_create_empty_texture_format(src_width, src_height, SCE_GXM_TEXTURE_FORMAT_A8B8G8R8);
+    vita2d_texture_set_filters(vitatex_hwscreen, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
+    screen_pixels = (uint32_t*) vita2d_texture_get_datap(vitatex_hwscreen);
+    padding = vita2d_texture_get_stride(vitatex_hwscreen) / sizeof (uint32_t) - src_width;
+
+    // erase the screen for both buffers
+    if (vitatex_hwscreen) {
+        for (int i = 0; i <= 3; i++) {
+            vita2d_start_drawing();
+            vita2d_clear_screen();
+            vita2d_end_drawing();
+            vita2d_swap_buffers();
+        }
+    }
 
 #else
     // Setup SDL Screen size
@@ -193,11 +199,11 @@ bool RenderSurface::init(int src_width, int src_height,
     window = SDL_CreateWindow("Cannonball", 0, 0, scn_width, scn_height, flags);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, src_width, src_height);
-#endif
 
     // Convert the SDL pixel surface to 32 bit.
     // This is potentially a larger surface area than the internal pixel array.
     screen_pixels = (uint32_t*)surface->pixels;
+#endif
     
     // SDL Pixel Format Information
     Rshift = surface->format->Rshift;
@@ -224,20 +230,29 @@ bool RenderSurface::start_frame()
 
 bool RenderSurface::finalize_frame()
 {
+#ifdef __vita__
+    vita2d_start_drawing();
+    //vita2d_clear_screen();
+    float sx = (float) dst_rect.w / (float) src_rect.w;
+    float sy = (float) dst_rect.h / (float) src_rect.h;
+    vita2d_draw_texture_scale(vitatex_hwscreen, dst_rect.x, dst_rect.y, sx, sy);
+    vita2d_end_drawing();
+    vita2d_swap_buffers();
+#else
     // SDL2 block
     SDL_UpdateTexture(texture, NULL, screen_pixels, src_width * sizeof (Uint32));
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
     SDL_RenderPresent(renderer);
     //
-
+#endif
     return true;
 }
 
 void RenderSurface::draw_frame(uint16_t* pixels)
 {
-    uint32_t* spix = screen_pixels;
 #ifdef __vita__
+    uint32_t* spix = screen_pixels;
     for (int i = 0; i < src_height; i++) {
         for (int j = 0; j < src_width; j++) {
             *(spix++) = 0xFF << 24 | rgb[*(pixels++) & ((S16_PALETTE_ENTRIES * 3) - 1)] ; 
@@ -246,6 +261,7 @@ void RenderSurface::draw_frame(uint16_t* pixels)
             spix++;
     }
 #else
+    uint32_t* spix = screen_pixels;
     for (int i = 0; i < src_height * src_width; i++)
         *(spix++) = rgb[*(pixels++) & ((S16_PALETTE_ENTRIES * 3) - 1)];
 #endif

@@ -14,6 +14,11 @@
 
 #include "renderbase.hpp"
 
+#ifdef __vita__
+#include "psp2/psp2_shader.h"
+#include <vita2d_fbo.h>
+#endif
+
 class RenderSurface : public RenderBase
 {
 public:
@@ -45,6 +50,8 @@ private:
 
 #ifdef __vita__
     int padding;
+    vita2d_texture *vitatex_hwscreen;
+    vita2d_shader *shader;
 #endif
 
 };
