@@ -22,18 +22,18 @@ Notes about Vita version
 
 Vita Controls
 =====
-Note: Buttons can be re-mapped in menu
+Note: Buttons can be re-mapped in menu  
 
-L = insert coin
-R = menu
-Square = start
-Triangle = gas / enter letter on hi-score screen 
-Circle = brake
-Cross = change gears
-Select = change in-game camera 
-Dpad = menu navigation and digital steering wheel controls
-Left stick = analog steering wheel if analog is set to ON or WHEEL ONLY, otherwise this is digital.
-Right stick = analog gas/brake if analog is set to ON
+L = insert coin  
+R = menu  
+Square = start  
+Triangle = gas / enter letter on hi-score screen  
+Circle = brake  
+Cross = change gears  
+Select = change in-game camera   
+Dpad = menu navigation and digital steering wheel controls  
+Left stick = analog steering wheel if analog is set to ON or WHEEL ONLY, otherwise this is digital.  
+Right stick = analog gas/brake if analog is set to ON  
 
 Installation Instructions
 =====
