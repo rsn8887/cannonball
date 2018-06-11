@@ -10,7 +10,7 @@ Thanks to my Patreon supporters: Andyways, CountDuckula, and Sean Ritzo.
 
 NOTE: Arcade roms for Outrun Version B are required to run this engine. The roms are NOT included in the download (see installation instructions).
 
-![](https://s14.postimg.cc/tspgcisep/1_E6_A27_F6-_D7_A0-48_C8-_A6_C3-_C597_F6_CC2783.jpg)
+![](screenshots/Cannonball_vita_1.jpg)
 
 A detailed Manual and FAQ are here:
 https://github.com/djyt/cannonball/wiki
