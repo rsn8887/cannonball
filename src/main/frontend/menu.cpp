@@ -283,6 +283,10 @@ void Menu::init()
         display_message(cannonboard->started() ? "CANNONBOARD FOUND!" : "CANNONBOARD ERROR!");
 
     state = STATE_MENU;
+#ifdef __SWITCH__
+    // prevent audio crackle on startup
+    restart_video();
+#endif
 }
 
 void Menu::tick(Packet* packet)

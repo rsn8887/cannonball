@@ -41,7 +41,7 @@ void Input::init(int pad_id, int* key_config, int* pad_config, int analog, int* 
 
     a_wheel = CENTRE;
     
-#ifdef __vita__
+#if defined(__vita__) || defined(__SWITCH__)
     dpad_up = false;
     dpad_down = false;
     dpad_left = false;
@@ -164,7 +164,7 @@ void Input::handle_joy_axis(SDL_JoyAxisEvent* evt)
             // Neural
             if ( (value > -DIGITAL_DEAD ) && (value < DIGITAL_DEAD ) )
             {
-#ifdef __vita__
+#if defined(__vita__) || defined(__SWITCH__)
                 if (!dpad_left)
                     keys[LEFT] = false;
                 if (!dpad_right)
@@ -189,7 +189,7 @@ void Input::handle_joy_axis(SDL_JoyAxisEvent* evt)
             // Neural
             if ( (value > -DIGITAL_DEAD ) && (value < DIGITAL_DEAD ) )
             {
-#ifdef __vita__
+#if defined(__vita__) || defined(__SWITCH__)
                 if (!dpad_up)
                     keys[UP] = false;
                 if (!dpad_down)
@@ -241,7 +241,7 @@ void Input::handle_joy_axis(SDL_JoyAxisEvent* evt)
             a_wheel = adjusted;
         }
         // Accelerator and Brake [Combined Axis]
-#ifdef __vita__
+#if defined(__vita__) || defined(__SWITCH__)
         else if (evt->axis == axis[2])
 #else
         else if (axis[1] == axis[2] && (evt->axis == axis[1] || evt->axis == axis[2]))
@@ -270,7 +270,7 @@ void Input::handle_joy_axis(SDL_JoyAxisEvent* evt)
                 a_brake = 0;
             }
         }
-#ifndef __vita__
+#if defined(__vita__) || defined(__SWITCH__)
         // Accelerator [Single Axis]
         else if (evt->axis == axis[1])
         {
@@ -345,6 +345,27 @@ void Input::handle_joy(const uint8_t button, const bool is_pressed)
         keys[UP] = is_pressed;
     }
     if (button == 9) {
+        dpad_right = is_pressed;
+        keys[RIGHT] = is_pressed;
+    }
+#endif
+
+#ifdef __SWITCH__
+    //map dpad to digital directions to allow menu control
+    //even when analog wheel is enabled
+    if (button == 15) {
+        dpad_down = is_pressed;
+        keys[DOWN] = is_pressed;
+    }
+    if (button == 12) {
+        dpad_left = is_pressed;
+        keys[LEFT] = is_pressed;
+    }
+    if (button == 13) {
+        dpad_up = is_pressed;
+        keys[UP] = is_pressed;
+    }
+    if (button == 14) {
         dpad_right = is_pressed;
         keys[RIGHT] = is_pressed;
     }

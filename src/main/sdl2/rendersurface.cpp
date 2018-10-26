@@ -38,7 +38,7 @@ bool RenderSurface::init(int src_width, int src_height,
     this->video_mode = video_mode;
     this->scanlines  = scanlines;
 
-#ifdef __vita__
+#if defined(__vita__)
     int flags = 0;
     flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     flags |= SDL_WINDOW_RESIZABLE;

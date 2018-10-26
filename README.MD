@@ -1,12 +1,12 @@
 Overview
 =====
-This is my Vita port of Cannonball, an enhanced Outrun engine by djyt.
+This is my Vita and Switch port of Cannonball, an enhanced Outrun engine by djyt.
 
 Thanks djyt for writing such a great program and making sure it is easily portable.
 
 Thanks to ScHlAuChi for testing.
 
-Thanks to my Patreon supporters: Andyways, CountDuckula, and Sean Ritzo.
+Thanks to my Patreon supporters: Andyways, CountDuckula, Matthew Machnee and Sean Ritzo.
 
 NOTE: Arcade roms for Outrun Version B are required to run this engine. The roms are NOT included in the download (see installation instructions).
 
@@ -15,27 +15,31 @@ NOTE: Arcade roms for Outrun Version B are required to run this engine. The roms
 A detailed Manual and FAQ are here:
 https://github.com/djyt/cannonball/wiki
 
-Notes about Vita version
+Switch Installation Instructions
 =====
-- Default difficulty is set to easy, but can be changed to normal or hard in the menu.
-- The game runs at full speed with almost constant 60 fps. The exception is some slowdown at the beginning of the race. That slowdown can also be eliminated by turning of widescreen mode in the menu, but then the picture is a bit smaller. The high-resolution hack should not be enabled, it causes too much slow-down.
+Arcade roms from Outrun version B are required to run this homebrew, they are not included.
 
-Vita Controls
+- Extract the contents of cannonball_switch.zip into the folder `switch/` on your sdcard. You should have a folder `switch/Cannonball_Switch/`.
+- Obtain the arcade roms for Outrun Version B and extract them into `switch/Cannonball_Switch/roms`
+- Launch the .nro file using your favorite homebrew launcher, enjoy Outrun in almost perfect 60 fps.
+- This version of Cannonball is called "Cannonball_Switch" to distinguish it from Lantus' port
+
+Switch Controls
 =====
 Note: Buttons can be re-mapped in menu  
 
-L = insert coin  
-R = menu  
-Square = start  
-Triangle = gas / enter letter on hi-score screen  
-Circle = brake  
-Cross = change gears  
-Select = change in-game camera   
+Minus = insert coin  
+Plus = start  
+Y = gas / OK in menu
+B = brake
+X = change gears  
+L = change in-game camera   
+R = menu
 Dpad = menu navigation and digital steering wheel controls  
-Left stick = analog steering wheel if analog is set to ON or WHEEL ONLY, otherwise this is digital.  
+Left stick = analog steering wheel if analog is set to ON or WHEEL ONLY, otherwise this is digital.
 Right stick = analog gas/brake if analog is set to ON  
 
-Installation Instructions
+Vita Installation Instructions
 =====
 Arcade roms from Outrun version B are required to run this homebrew, they are not included.
 
@@ -43,6 +47,26 @@ Arcade roms from Outrun version B are required to run this homebrew, they are no
 - Extract the contents of data.zip into ux0:data/ (it is just two folders and an info file for roms)
 - Obtain the arcade roms for Outrun Version B and extract them into ux0:data/cannonball/roms
 - Launch the bubble, enjoy Outrun in almost perfect 60 fps.
+
+Vita Controls
+=====
+Note: Buttons can be re-mapped in menu  
+
+L = insert coin  
+Square = start  
+Triangle = gas / enter letter on hi-score screen  
+Circle = brake  
+Cross = change gears  
+Select = change in-game camera   
+R = menu
+Dpad = menu navigation and digital steering wheel controls  
+Left stick = analog steering wheel if analog is set to ON or WHEEL ONLY, otherwise this is digital.  
+Right stick = analog gas/brake if analog is set to ON  
+
+Notes about Vita version
+=====
+- Default difficulty is set to easy, but can be changed to normal or hard in the menu.
+- The game runs at full speed with almost constant 60 fps. The exception is some slowdown at the beginning of the race. That slowdown can also be eliminated by turning of widescreen mode in the menu, but then the picture is a bit smaller. The high-resolution hack should not be enabled, it causes too much slow-down.
 
 Rom names
 ======
@@ -112,23 +136,36 @@ Build Instructions
 =====
 Cannonball needs some boost header-only libraries. To prepare compilation:
 - Download and extract boost_1_66_0.zip from [here](https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.zip)
-- copy the subfolder boost from that archive to $VITASDK/arm-vita-eabi/include/boost
-- you should now have a file $VITASDK/arm-vita-eabi/include/boost/version.hpp and hundreds of other Boost header files.
+- copy the subfolder boost from that archive to $VITASDK/arm-vita-eabi/include/boost for Vita, or to $DEVKITPRO/portlibs/switch/include/boost for Switch
+- you should now have a file $VITASDK/arm-vita-eabi/include/boost/version.hpp, or $DEVKITPRO/portlibs/switch/include/boos/version.hpp and hundreds of other Boost header files.
 - Now that boost is installed, proceed to compile cannonball:
 ````
 cd cannonball
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release ../cmake
+````
+and then 
+````
+cmake -BUILD_PSP2=ON -DCMAKE_BUILD_TYPE=Release ../cmake
 make Cannonball.vpk -j10
 ````
+for Vita, or 
+````
+cmake -BUILD_NX=ON -DCMAKE_BUILD_TYPE=Release ../cmake
+make Cannonball_Switch.zip -j10
+````
+for Switch.
 
-Note: The source depends on FrangarCJ's Vita2d fbo branch with shader support here: https://github.com/Cpasjuste/vita2dlib/tree/fbo
+Note: The Vita source depends on FrangarCJ's Vita2d fbo branch with shader support here: https://github.com/Cpasjuste/vita2dlib/tree/fbo
 and FrangarCJ's vita-shader-collection gtu branch here: https://github.com/frangarcj/vita-shader-collection/tree/gtu
 Those are both included as binaries and linked automatically.
 
 Changelog
 =====
+1.05switch
+
+- added Switch release
+
 1.05
 
 - dpad works now if analog="off"

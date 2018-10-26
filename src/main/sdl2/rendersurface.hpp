@@ -43,7 +43,7 @@ private:
     SDL_Rect src_rect;
     SDL_Rect dst_rect;
 
-#ifdef __vita__
+#if defined(__vita__) || defined(__SWITCH__)
     int padding;
 #endif
 

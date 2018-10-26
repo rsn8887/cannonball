@@ -1,15 +1,45 @@
 cmake_minimum_required(VERSION 2.8)
 
-#VITA
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  if(DEFINED ENV{VITASDK})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
-  else()
-    message(FATAL_ERROR "Please define VITASDK to point to your SDK path!")
+# Cannonball version
+set(VERSION_MAJOR 1)
+set(VERSION_MINOR 05)
+
+if(BUILD_PSP2)
+  set(CMAKE_SYSTEM_NAME "Generic")
+  if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if(DEFINED ENV{VITASDK})
+      set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
+    else()
+      message(FATAL_ERROR "Please define VITASDK to point to your SDK path!")
+    endif()
   endif()
-endif()
-set(TARGET vita)
-#END VITA
+
+  set(TARGET vita)
+endif(BUILD_PSP2)
+
+if (BUILD_NX)
+    set(CMAKE_SYSTEM_NAME "Generic")
+    set(DEVKITPRO $ENV{DEVKITPRO})
+    set(CMAKE_SYSTEM_PROCESSOR "armv8-a")
+    set(CMAKE_C_COMPILER "${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-gcc")
+    set(CMAKE_CXX_COMPILER "${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-g++")
+    set(CMAKE_ASM_COMPILER "${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-as")
+    set(CMAKE_AR "${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-gcc-ar" CACHE STRING "")
+    set(CMAKE_RANLIB "${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-gcc-ranlib" CACHE STRING "")
+    set(CMAKE_C_FLAGS "-march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE -I${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include" CACHE STRING "C flags")
+    #-ffast-math -ffunction-sections -fdata-sections
+    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fpermissive" CACHE STRING "C++ flags")
+    #-fno-rtti -fno-exceptions -std=gnu++11
+    set(CMAKE_FIND_ROOT_PATH ${DEVKITPRO} ${DEVKITPRO}/devkitA64 ${DEVKITPRO}/libnx ${DEVKITPRO}/portlibs/switch)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+    set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available")
+    link_directories(${DEVKITPRO}/libnx/lib ${DEVKITPRO}/portlibs/switch/lib)
+
+    set(TARGET switch)
+endif (BUILD_NX)
 
 project (Cannonball)
 
@@ -274,9 +304,7 @@ SOURCE_GROUP(src\\cannonboard FILES ${src_cannonboard})
 SOURCE_GROUP(src\\engine FILES ${src_engine})
 SOURCE_GROUP(src\\engine\\audio FILES ${src_engine_audio})
 
-
-#VITA
-if(VITA)
+if(BUILD_PSP2)
     set(src_vita
         "${main_cpp_base}/psp2/psp2_shader.h"
 
@@ -305,9 +333,8 @@ else()
         ${src_cannonboard}
         ${src_engine}
         ${src_engine_audio}
-        ${src_vita}
     )
-endif(VITA)
+endif(BUILD_PSP2)
 
 # Add Icon For Windows Builds
 if(WIN32)
@@ -350,12 +377,10 @@ configure_file(../res/tilepatch.bin ./res/tilepatch.bin
     COPYONLY 
 )
 
-#VITA
-if(VITA)
+if(BUILD_PSP2)
 configure_file(../res/config_vita.xml ./config.xml
     COPYONLY 
 )
-endif()
 vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME} ${UNSAFE_FLAG})
 add_custom_target(${PROJECT_NAME}.vpk
         DEPENDS ${PROJECT_NAME}.self
@@ -366,4 +391,27 @@ add_custom_target(${PROJECT_NAME}.vpk
         COMMAND cp -r res vpk
         COMMAND cd vpk && zip -r ../Cannonball.vpk . && cd ..
         )
-#END VITA
+endif(BUILD_PSP2)
+
+if(BUILD_NX)
+configure_file(../res/config_switch.xml ./config.xml
+    COPYONLY
+)
+add_executable(${PROJECT_NAME}.elf ${SRCS})
+set_target_properties(${PROJECT_NAME}.elf PROPERTIES LINK_FLAGS "-specs=${DEVKITPRO}/libnx/switch.specs")
+add_custom_target(${PROJECT_NAME}_Switch.nro
+        DEPENDS ${PROJECT_NAME}.elf
+        COMMAND ${DEVKITPRO}/tools/bin/nacptool --create "${PROJECT_NAME}_Switch" "rsn8887" "${VERSION_MAJOR}.${VERSION_MINOR}" Cannonball_Switch.nacp
+        COMMAND ${DEVKITPRO}/tools/bin/elf2nro ${PROJECT_NAME}.elf ${PROJECT_NAME}_Switch.nro --icon=${CMAKE_SOURCE_DIR}/../switchdata/icon0.jpg --nacp=Cannonball_Switch.nacp
+        )
+add_custom_target(${PROJECT_NAME}_Switch.zip
+        DEPENDS ${PROJECT_NAME}_Switch.nro
+        COMMAND rm -rf ${CMAKE_BINARY_DIR}/release/Cannonball_Switch
+        COMMAND mkdir -p ${CMAKE_BINARY_DIR}/release/Cannonball_Switch
+        COMMAND mkdir -p ${CMAKE_BINARY_DIR}/release/Cannonball_Switch/roms
+        COMMAND cp -f ${CMAKE_BINARY_DIR}/Cannonball_Switch.nro ${CMAKE_BINARY_DIR}/release/Cannonball_Switch/Cannonball_Switch.nro
+        COMMAND cp -r ${CMAKE_BINARY_DIR}/config.xml ${CMAKE_BINARY_DIR}/release/Cannonball_Switch/config.xml
+        COMMAND cp -r ${CMAKE_BINARY_DIR}/res ${CMAKE_BINARY_DIR}/release/Cannonball_Switch/res
+        COMMAND cd ${CMAKE_BINARY_DIR}/release && zip -r ../${PROJECT_NAME}_${VERSION_MAJOR}.${VERSION_MINOR}_Switch.zip Cannonball_Switch && cd ${CMAKE_BINARY_DIR}
+        )
+endif(BUILD_NX)

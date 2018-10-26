@@ -93,7 +93,7 @@ private:
     void handle_key(const int, const bool);
     void handle_joy(const uint8_t, const bool);
     
-#ifdef __vita__
+#if defined(__vita__) || defined(__SWITCH__)
     // dpad wins over joystick
     bool dpad_up;
     bool dpad_down;
