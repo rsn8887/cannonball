@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 # Cannonball version
 set(VERSION_MAJOR 1)
-set(VERSION_MINOR 05)
+set(VERSION_MINOR 06)
 
 if(BUILD_PSP2)
   set(CMAKE_SYSTEM_NAME "Generic")

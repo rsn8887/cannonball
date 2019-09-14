@@ -146,12 +146,12 @@ cd build
 ````
 and then 
 ````
-cmake -BUILD_PSP2=ON -DCMAKE_BUILD_TYPE=Release ../cmake
+cmake -DBUILD_PSP2=ON -DCMAKE_BUILD_TYPE=Release ../cmake
 make Cannonball.vpk -j10
 ````
 for Vita, or 
 ````
-cmake -BUILD_NX=ON -DCMAKE_BUILD_TYPE=Release ../cmake
+cmake -DBUILD_NX=ON -DCMAKE_BUILD_TYPE=Release ../cmake
 make Cannonball_Switch.zip -j10
 ````
 for Switch.
@@ -162,6 +162,10 @@ Those are both included as binaries and linked automatically.
 
 Changelog
 =====
+1.06switch
+
+- recompiled with 9.0.0 support
+
 1.05switch
 
 - added Switch release
