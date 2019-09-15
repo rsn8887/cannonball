@@ -21,6 +21,11 @@ vita2d_shader *shader = NULL;
 
 RenderSurface::RenderSurface()
 {
+#ifdef __SWITCH__
+   window = NULL;
+   renderer = NULL;
+   texture = NULL;
+#endif
 }
 
 RenderSurface::~RenderSurface()
@@ -189,10 +194,21 @@ bool RenderSurface::init(int src_width, int src_height,
        std::cerr << "Surface creation failed: " << SDL_GetError() << std::endl;
        return false;
     }
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"); 
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+#ifdef __SWITCH__
+    if (!window)
+       window = SDL_CreateWindow("Cannonball", 0, 0, scn_width, scn_height, flags);
+    else
+       SDL_SetWindowSize(window, scn_width, scn_height);
+    if (!renderer)
+       renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC);
+    if (!texture)
+       texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, src_width, src_height);
+#else
     window = SDL_CreateWindow("Cannonball", 0, 0, scn_width, scn_height, flags);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, src_width, src_height);
+#endif
 #endif
 
     // Convert the SDL pixel surface to 32 bit.
@@ -213,8 +229,11 @@ bool RenderSurface::init(int src_width, int src_height,
 void RenderSurface::disable()
 {
     SDL_DestroyTexture(texture);
+    texture = NULL;
+#ifndef __SWITCH__
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+#endif
 }
 
 bool RenderSurface::start_frame()
