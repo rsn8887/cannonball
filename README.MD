@@ -162,6 +162,10 @@ Those are both included as binaries and linked automatically.
 
 Changelog
 =====
+1.07switch
+
+- Fix black screen due to linking with latest SDL2
+
 1.06switch
 
 - recompiled with 9.0.0 support
