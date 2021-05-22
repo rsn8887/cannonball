@@ -6,7 +6,7 @@ Thanks djyt for writing such a great program and making sure it is easily portab
 
 Thanks to ScHlAuChi for testing.
 
-Thanks to my Patreon supporters: Andyways, CountDuckula, Matthew Machnee and Sean Ritzo.
+Thanks to my Patreon supporters: Andyways, Count Duckula, Jesse Harlin, Thomas Luten, Matthew Machnee, Mored4u, Ibrahim Fazel Poor, RadicalR.
 
 NOTE: Arcade roms for Outrun Version B are required to run this engine. The roms are NOT included in the download (see installation instructions).
 
@@ -162,6 +162,10 @@ Those are both included as binaries and linked automatically.
 
 Changelog
 =====
+1.08switch
+
+- recompiled with 12.0.0 support
+
 1.07switch
 
 - Fix black screen due to linking with latest SDL2
