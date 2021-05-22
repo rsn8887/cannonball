@@ -137,7 +137,7 @@ Build Instructions
 Cannonball needs some boost header-only libraries. To prepare compilation:
 - Download and extract boost_1_66_0.zip from [here](https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.zip)
 - copy the subfolder boost from that archive to $VITASDK/arm-vita-eabi/include/boost for Vita, or to $DEVKITPRO/portlibs/switch/include/boost for Switch
-- you should now have a file $VITASDK/arm-vita-eabi/include/boost/version.hpp, or $DEVKITPRO/portlibs/switch/include/boos/version.hpp and hundreds of other Boost header files.
+- you should now have a file $VITASDK/arm-vita-eabi/include/boost/version.hpp, or $DEVKITPRO/portlibs/switch/include/boost/version.hpp and hundreds of other Boost header files.
 - Now that boost is installed, proceed to compile cannonball:
 ````
 cd cannonball
@@ -162,6 +162,10 @@ Those are both included as binaries and linked automatically.
 
 Changelog
 =====
+1.08switch
+
+- recompiled with 12.0.2 support
+
 1.07switch
 
 - Fix black screen due to linking with latest SDL2
